@@ -11,3 +11,20 @@ services:
             - .:/app:rw
         environment:
             - APP_ENV=dev
+        depends_on:
+            - postgres
+
+    postgres:
+        image: postgres:latest
+        restart: always
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER:-app}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+            POSTGRES_DB: ${POSTGRES_DB:-app}
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+
+volumes:
+    postgres_data:
