@@ -1,4 +1,4 @@
-### Calculate Price
+### Calculate Price discount 6%
 POST http://127.0.0.1:8337/calculate-price
 Accept: application/json
 Content-Type: application/json
@@ -6,10 +6,29 @@ Content-Type: application/json
 {
   "product": 1,
   "taxNumber": "DE123456789",
-  "couponCode": "D15"
+  "couponCode": "DIS6"
 }
 
-### Execute Purchase
+### Calculate Price. Coupon not found
+POST http://127.0.0.1:8337/calculate-price
+Accept: application/json
+Content-Type: application/json
+
+{
+  "product": 1,
+  "taxNumber": "DE123456789",
+  "couponCode": "DIS10"
+}
+
+### Calculate Price. Send Empty JSON
+POST http://127.0.0.1:8337/calculate-price
+Accept: application/json
+Content-Type: application/json
+
+{
+}
+
+### Execute Purchase discount 25%
 POST http://127.0.0.1:8337/purchase
 Accept: application/json
 Content-Type: application/json
@@ -17,6 +36,18 @@ Content-Type: application/json
 {
   "product": 1,
   "taxNumber": "IT12345678900",
-  "couponCode": "D15",
+  "couponCode": "DIS25",
   "paymentProcessor": "paypal"
+}
+
+### Execute Purchase discount 25% with invalid payment processor
+POST http://127.0.0.1:8337/purchase
+Accept: application/json
+Content-Type: application/json
+
+{
+  "product": 1,
+  "taxNumber": "IT12345678900",
+  "couponCode": "DIS25",
+  "paymentProcessor": "paypay"
 }
