@@ -16,6 +16,14 @@ class TaxNumberRepository extends ServiceEntityRepository
         parent::__construct($registry, TaxNumber::class);
     }
 
+	public function findByCode(string $code): ?TaxNumber {
+		return $this->createQueryBuilder('t')
+			->where('t.pattern LIKE :val')
+			->setParameter('val', $code . '%')
+			->getQuery()
+			->getOneOrNullResult();
+	}
+
     //    /**
     //     * @return TaxNumber[] Returns an array of TaxNumber objects
     //     */
