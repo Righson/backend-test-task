@@ -5,6 +5,9 @@ namespace App\Entity;
 use App\Repository\TaxNumberRepository;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Налоговые номера (их паттерны) хранятся в базе в виде пары паттерн-налог
+*/
 #[ORM\Entity(repositoryClass: TaxNumberRepository::class)]
 class TaxNumber
 {

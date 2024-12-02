@@ -6,6 +6,10 @@ use App\Repository\ProductRepository;
 use App\Type\Status;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Продкут хранятся в базе. Цена хранится в евроцентах
+ * Продукт может быть активирован или деактивирован с помощью поля статус
+*/
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
 {

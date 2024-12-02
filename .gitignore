@@ -2,7 +2,6 @@
 .env.*.local
 compose.override.yaml
 .phpactor.json
-bin
 vendor
 var
 

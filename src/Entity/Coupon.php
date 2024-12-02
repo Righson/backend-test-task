@@ -6,6 +6,10 @@ use App\Repository\CouponRepository;
 use Doctrine\ORM\Mapping as ORM;
 use App\Type\Status;
 
+/**
+ * Купоны хранятся в базе используют один формат: DIS<скидка в процентах>
+ * поле статус активирет или деактивирует купон
+*/
 #[ORM\Entity(repositoryClass: CouponRepository::class)]
 class Coupon
 {

@@ -8,9 +8,10 @@ use App\Entity\TaxNumber;
 use App\Service\PaymentService;
 use App\Type\PaymentStatus;
 use App\Type\Status;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+use Doctrine\ORM\EntityManagerInterface;
+
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -47,13 +48,17 @@ class SiteController extends AbstractController
 		}
 
 		$product = $em->getRepository(Product::class)->find($paymentService->getProductID());
-		if (!$product) {
+		if (!$product || $product->getStatus() === Status::INACTIVE) {
             throw $this->createNotFoundException(
                 '1.No product found for id '.$paymentService->getProductID()
             );
 		}
 
-		$price = $paymentService->calculateTax($product->getPrice()) / 100;
+		try {
+			$price = $paymentService->calculateTax($product->getPrice()) / 100;
+		} catch (\Exception $e) {
+			return $this->json(['error' => '1.'.$e->getMessage()], Response::HTTP_BAD_REQUEST);
+		}
 
         return $this->json(['error' => '', 'price' => $price], Response::HTTP_OK);
     }
@@ -80,6 +85,11 @@ class SiteController extends AbstractController
 		}
 
 		$product = $em->getRepository(Product::class)->find($paymentService->getProductID());
+		if (!$product || $product->getStatus() === Status::INACTIVE) {
+            throw $this->createNotFoundException(
+                '1.No product found for id '.$paymentService->getProductID()
+            );
+		}
 
         $paymentStatus = $paymentService->pay($product->getPrice());
 
@@ -92,7 +102,7 @@ class SiteController extends AbstractController
 
         $price = $paymentService->calculateTax($product->getPrice()) / 100;
         return $this->json(['error' => '', 'product_id' => $paymentService->getProductID(), 'price' => $price], Response::HTTP_OK);
-    }
+	}
 
     private function renderError(ConstraintViolationList $errors): JsonResponse
     {

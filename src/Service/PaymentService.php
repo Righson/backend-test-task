@@ -4,7 +4,6 @@ namespace App\Service;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-use App\Validator as APIAssert;
 use App\Type\PaymentStatus;
 
 use Systemeio\TestForCandidates\PaymentProcessor\PaypalPaymentProcessor;
@@ -36,7 +35,15 @@ class PaymentService
 	public function isValidProductId(): bool
 	{
 		return $this->productId > 0;
-	}
+    }
+
+    /**
+    * Решил сделать валидацию так, вместо того чтобы делать свой кастомный валидатор
+    * так как этот способ мне показался более удобным
+    * для валидации налогового номера мне нужны паттерны которые находятся в базе
+    * в валидаторе пришлось бы проверять теже паттерны что используются в сервисе
+    * а тут они уже тоже есть.
+    */
 	#[Assert\IsTrue(message: 'Tax number is invalid or unknown')]
 	public function isValidTaxNumber(): bool
 	{
@@ -56,6 +63,11 @@ class PaymentService
 		return false;
 	}
 
+    /**
+    * Тут нужно было бы проверить существование купона отделным валидатором
+    * и отедльным валдатором корректность самого кода купоны. 
+    * Чтобы было две ошибки на каждый кейс
+    */
 	#[Assert\IsTrue(message: 'Coupon code is invalid or unknown')]
 	public function isValidCouponCode(): bool
 	{
@@ -136,7 +148,13 @@ class PaymentService
 
 	public function pay(int $price): PaymentStatus
 	{
+        try {
 		$price = $this->calculateTax($price);
+        } catch (\Exception $e) {
+            $this->message = $e->getMessage();
+            return PaymentStatus::FAIL;
+        }
+
 		if ($this->isValidPaymentProcessor()) {
 			$isSuccess = call_user_func([$this, $this->paymentProcessors[$this->paymentProcessor]], $price);
 			return $isSuccess ? PaymentStatus::OK : PaymentStatus::FAIL;
@@ -147,8 +165,14 @@ class PaymentService
 
 	public function calculateTax(int $price): int
 	{
+        // на случай если валидация не производилась в контроллере
 		if($this->calulatedPrice == -1) {
+            try {
 			$discount = $this->getCouponDiscount();
+            } catch (\Exception $e) {
+                // пробросим исключение наверх
+                throw $e;
+            }
 			$tax = $this->getTax();
 			$percent = $price / 100;
 
@@ -163,10 +187,12 @@ class PaymentService
 	}
 
 	private function getCouponDiscount(): int
-	{
+    {
+        // на случай если валидация не производилась в контроллере
 		if($this->isValidCouponCode()) {
 			return (int) str_replace(self::COUPON_PREFIX, '', $this->couponCode);
-		}
+        }
+        throw new \Exception('Invalid coupon code');
 	}
 
 	private function getTax(): int
